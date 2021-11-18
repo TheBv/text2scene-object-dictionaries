@@ -5,4 +5,6 @@ When running for the first time make sure to run `neomodel_install_labels.py` to
 constraints are set.
 
 #Running
-Run `insert.py` to insert the entire wordnet db into neo4j.
+Run `insert.py -a` to insert the entire wordnet db into neo4j.
+There also exists `insert.py -n` and `insert.py -a` to insert the nodes and their relationships 
+respectively
