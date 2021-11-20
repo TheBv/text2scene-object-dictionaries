@@ -1,3 +1,7 @@
+## Introduction
+This is a project that's part of the practical Text2Scene course at the Goethe University in 
+Frankfurt. More specifically this project is about object-dictionaries.
+
 ## Installation
 Configuring the neo4j url is done via the environment variable `NEO4J_BOLT_URL`.
 
