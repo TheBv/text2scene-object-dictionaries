@@ -11,18 +11,35 @@ parser.add_argument('--n', help="Parse only the nodes into the database", const=
 
 class InsertHelper:
 
-    def add_words_and_connect_relationships(self, graph_node_relation, additional_words):
+    def add_synsets_and_connect_relationships(self, graph_node_relation, additional_words: list):
+        """
+        Takes an existing nodes connection attribute and adds all the words in the
+        additional_words list recursively to the db if they don't exist yet. Then connect them to
+        the given relation
+        :param graph_node_relation: A nodes connection attribute
+        :param additional_words: A list of synsets
+        """
         for additional_type in additional_words:
-            node = self.add_word_and_relationships(additional_type)
+            node = self.add_synset_and_relationships(additional_type)
             graph_node_relation.connect(node)
 
-    def add_word_and_connect(self, graph_node_relation, additional_words):
-        for additional_type in additional_words:
-            node = self.get_or_create_word(additional_type)
+    def add_synset_and_connect(self, graph_node_relation, additional_synsets: list):
+        """
+        Adds all synsets in the additional_synsets list to the db then connect them to the relation
+        that's being provided
+        :param graph_node_relation: A nodes connection attribute
+        :param additional_synsets: A list of synsets
+        """
+        for additional_type in additional_synsets:
+            node = self.get_or_create_synset(additional_type)
             graph_node_relation.connect(node)
 
     @staticmethod
-    def batch_get_or_create_word(synsets: list):
+    def batch_create_synset(synsets: list):
+        """
+        Adds all synsets in the list and their lemmas to the database
+        :param synsets: A list of synsets to be added
+        """
         words = []
         lemmas = []
         for synset in synsets:
@@ -30,16 +47,21 @@ class InsertHelper:
             for lemma in synset.lemmas():
                 node_name = """{}.{}""".format(synset.name(), lemma.name())
                 lemmas.append({"name": node_name})
-        GraphModel.Word.create_or_update(*words)
+        GraphModel.Synset.create_or_update(*words)
         GraphModel.Lemma.create_or_update(*lemmas)
 
-    def get_or_create_word(self, synset):
+    def get_or_create_synset(self, synset):
+        """
+        Either gets the synset from the db or adds it and the lemma to it
+        :param synset: A synset
+        :return:
+        """
         word = None
         try:
-            word = self.get_word(synset)
+            word = self.get_synset(synset)
             return word
         except DoesNotExist:
-            word = GraphModel.Word(name=synset.name(), definition=synset.definition())
+            word = GraphModel.Synset(name=synset.name(), definition=synset.definition())
             # Make sure we save the word to discourage infinite recursion
             word.save()
         # Add all the lemmas
@@ -48,12 +70,22 @@ class InsertHelper:
         return word
 
     @staticmethod
-    def get_word(synset):
-        return GraphModel.Word.nodes.get(name=synset.name())
+    def get_synset(synset):
+        """
+        Gets a synset from the db
+        :param synset: A wordnet synset
+        :return: A db synset
+        """
+        return GraphModel.Synset.nodes.get(name=synset.name())
 
     @staticmethod
     def add_or_get_lemma(synset, lemma):
-        lemma_node = None
+        """
+        Adds or gets a lemma from the database given a wordnet synset and it's lemma
+        :param synset: A wordnet synset
+        :param lemma: A wordnet lemma that's part of the provided synset
+        :return: The db representation of the lemma
+        """
         node_name = """{}.{}""".format(synset.name(), lemma.name())
         try:
             lemma_node = GraphModel.Lemma.nodes.get(name=node_name)
@@ -61,20 +93,30 @@ class InsertHelper:
         except DoesNotExist:
             lemma_node = GraphModel.Lemma(name=node_name)
             lemma_node.save()
-        return lemma_node
+            return lemma_node
 
     @staticmethod
     def get_lemma(synset, lemma):
+        """
+        Gets a lemma from the db given a wordnet synset and one of it's lemma
+        :param synset: A wordnet synset
+        :param lemma: A wordnet lemma that's part of the provided synset
+        :return: The db representation of the lemma
+        """
         node_name = """{}.{}""".format(synset.name(), lemma.name())
         return GraphModel.Lemma.nodes.get(name=node_name)
 
-    def add_word_and_relationships(self, synset):
-        word = None
+    def add_synset_and_relationships(self, synset):
+        """
+        Adds a wordnet synset as well as all of it's relationships, recursively into the db
+        :param synset: A wordnet synset
+        :return: The db representation of that synset
+        """
         try:
-            word = GraphModel.Word.nodes.get(name=synset.name())
+            word = GraphModel.Synset.nodes.get(name=synset.name())
             return word
         except DoesNotExist:
-            word = GraphModel.Word(name=synset.name(), definition=synset.definition())
+            word = GraphModel.Synset(name=synset.name(), definition=synset.definition())
             # Make sure we save the word to discourage infinite recursion
             word.save()
         lemmas = synset.lemmas()
@@ -82,15 +124,20 @@ class InsertHelper:
         for lemma in lemmas:
             lemma_node = self.add_or_get_lemma(synset, lemma)
             word.lemmas.connect(lemma_node)
-        self.add_words_and_connect_relationships(word.hypernyms, synset.hypernyms())
-        self.add_words_and_connect_relationships(word.hyponyms, synset.hyponyms())
-        self.add_words_and_connect_relationships(word.member_holonyms, synset.member_holonyms())
-        self.add_words_and_connect_relationships(word.root_hypernyms, synset.root_hypernyms())
-        self.add_words_and_connect_relationships(word.member_holonyms, synset.member_holonyms())
+        self.add_synsets_and_connect_relationships(word.hypernyms, synset.hypernyms())
+        self.add_synsets_and_connect_relationships(word.hyponyms, synset.hyponyms())
+        self.add_synsets_and_connect_relationships(word.member_holonyms, synset.member_holonyms())
+        self.add_synsets_and_connect_relationships(word.root_hypernyms, synset.root_hypernyms())
+        self.add_synsets_and_connect_relationships(word.member_holonyms, synset.member_holonyms())
         return word
 
     def add_lemma_and_relationships(self, synset, lemma):
-        lemma_node = None
+        """
+        Adds a wordnet lemma as well as all of it's relationships, recursively into the db
+        :param synset: A wordnet synset
+        :param lemma: A wordnet lemma that's part of the provided synset
+        :return: The db representation of the lemma
+        """
         node_name = """{}.{}""".format(synset.name(), lemma.name())
         try:
             lemma_node = GraphModel.Lemma.nodes.get(name=node_name)
@@ -106,23 +153,34 @@ class InsertHelper:
             lemma_node.pertainyms.connect(pertainym)
         return lemma_node
 
-    def set_word_relationships(self, synset):
+    def set_synset_relationships(self, synset):
+        """
+        Sets the relationships of the corresponding db synset given a wordnet synset
+        :param synset: A wordnet synset
+        :return: None
+        """
         try:
-            word = self.get_word(synset)
+            word = self.get_synset(synset)
             lemmas = synset.lemmas()
             # Add all the lemmas
             for lemma in lemmas:
                 lemma_node = self.get_lemma(synset, lemma)
                 word.lemmas.connect(lemma_node)
-            self.add_word_and_connect(word.hypernyms, synset.hypernyms())
-            self.add_word_and_connect(word.hyponyms, synset.hyponyms())
-            self.add_word_and_connect(word.member_holonyms, synset.member_holonyms())
-            self.add_word_and_connect(word.root_hypernyms, synset.root_hypernyms())
-            self.add_word_and_connect(word.member_holonyms, synset.member_holonyms())
+            self.add_synset_and_connect(word.hypernyms, synset.hypernyms())
+            self.add_synset_and_connect(word.hyponyms, synset.hyponyms())
+            self.add_synset_and_connect(word.member_holonyms, synset.member_holonyms())
+            self.add_synset_and_connect(word.root_hypernyms, synset.root_hypernyms())
+            self.add_synset_and_connect(word.member_holonyms, synset.member_holonyms())
         except DoesNotExist:
             return
 
     def set_lemma_relationships(self, synset, lemma):
+        """
+        Sets the relationships of the corresponding db lemma given a wordnet lemma
+        :param synset: A wordnet synset
+        :param lemma: A wordnet lemma that's part of the provided synset
+        :return: None
+        """
         try:
             lemma_node = self.get_lemma(synset, lemma)
             for antonym in lemma.antonyms():
@@ -141,7 +199,7 @@ def parse_nodes(wordlist: list):
     n = 400
     print("PARSING NODES")
     for i in range(0, len(wordlist), n):
-        insert_helper.batch_get_or_create_word(wordlist[i:i+n])
+        insert_helper.batch_create_synset(wordlist[i:i + n])
         i += n
         if i % n == 0:
             print(i)
@@ -152,7 +210,7 @@ def parse_relationships(wordlist: list):
     i = 0
     print("ADDING RELATIONSHIPS")
     for synset in wordlist:
-        insert_helper.set_word_relationships(synset)
+        insert_helper.set_synset_relationships(synset)
         i += 1
         if i % 100 == 0:
             print(i)

@@ -1,20 +1,16 @@
 import os
 
-import neomodel
-from neomodel import (config, StructuredNode, StringProperty, ArrayProperty,
-                      UniqueIdProperty, RelationshipTo)
+from neomodel import (config, StructuredNode, StringProperty, RelationshipTo)
 config.DATABASE_URL = os.environ["NEO4J_BOLT_URL"]
 
 
-class Word(StructuredNode):
+class Synset(StructuredNode):
     name = StringProperty(unique_index=True, required=True)
     definition = StringProperty()
     hypernyms = RelationshipTo('Word', 'HAS_HYPERNYM')
     hyponyms = RelationshipTo('Word', 'HAS_HYPONYM')
     member_holonyms = RelationshipTo('Word', 'HAS_HOLONYM')
-    root_hypernyms = RelationshipTo('Word', 'HAS_ROOT_HYPERNYM')  # RelationshipFrom?
-    # antonyms = RelationshipTo('Word', 'HAS_ANTONYM')
-    # derivationally_related_forms = RelationshipTo('Word', 'HAS_HYPERNYM')
+    root_hypernyms = RelationshipTo('Word', 'HAS_ROOT_HYPERNYM')
     lemmas = RelationshipTo('Lemma', "HAS_LEMMA")
 
 
