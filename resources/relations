@@ -1,0 +1,16 @@
+#Positions
+The {Target} is next to the {mask}.;IS_NEXT_TO
+The {Target} is on top of the {mask}.;IS_ON_TOP_OF
+The {Target} is underneath the {mask}.;IS_UNDERNEATH
+The {Target} is inside the {mask}.;IS_INSIDE
+#Comparisons
+The {Target} is bigger than {mask}.;IS_BIGGER_THAN
+The {Target} is smaller than {mask}.;IS_SMALLER_THAN
+#Verbs
+They are {mask} the {Target}.;THEY_VERB
+They are {mask} on the {Target}.;THEY_VERB_ON
+#For comparison
+I am {mask} the {Target}.;I_VERB
+I am {mask} on the {Target}.;I_VERB_ON
+#Adjectives
+The {Target} is {mask}.;IS
