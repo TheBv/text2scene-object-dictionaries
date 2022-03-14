@@ -19,6 +19,9 @@ To insert bert relations edit or create a new `relations` file given the templat
 `resources` make sure to add the newly added relationships to the `GraphModel.py` and Run 
 `insert_bert_relations.py -file PATH`. You can make use of a gpu with `-gpu-device DEVICEID`
 
+#### Dump
+One can also grab the database dump from [here](https://github.com/TheBv/text2scene-object-dictionaries/releases/download/v0.1/neo4j.dump) and insert the database data that way
+
 ### Evaluation
 To evaluate the default object dictionary one can run `evaluate.py` with the csv files provided 
 in the resources. To generate their on csv files an example is provided below on how one could 
