@@ -58,7 +58,7 @@ To find a possibly optimal model one can run `best_model.py`. The params that ar
 be used when trying to find an optimal model one can modify `best_model_params.py`.
 For reference look at [Ampligraph#select_best_model_ranking](https://docs.ampligraph.org/en/1.4.0/generated/ampligraph.evaluation.select_best_model_ranking.html)
 
-###Create custom csv files
+### Create custom csv files
 **Prerequisite**: Make sure to install apoc to your neo4j database
 
 The following example will create the `all_relations_numbers.csv` file which is provided 
