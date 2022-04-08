@@ -1,0 +1,25 @@
+{
+  "cfg": {
+    "batches_count": 20,
+    "seed": 0,
+    "epochs": 100,
+    "k": 100,
+    "eta": 15,
+    "loss": "pairwise",
+    "loss_params": {
+      "margin": 2
+    },
+    "embedding_model_params": {},
+    "regularizer": "LP",
+    "regularizer_params": {
+      "p": 1,
+      "lambda": 0.0001
+    },
+    "optimizer": "adam",
+    "optimizer_params": {
+      "lr": 0.00793807787701838
+    },
+    "verbose": true
+  },
+  "early_stopping" : false
+}
