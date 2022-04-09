@@ -192,6 +192,10 @@ class InsertHelper:
          set o:RootWordObject""")
 
     def add_wv_relations(self):
+        """
+        Iterates through all the root words and adds a connection to all other root words that
+        are similair to it
+        """
         if self.wv is None:
             self.setup_wordvectors()
         count = 0
@@ -214,6 +218,10 @@ class InsertHelper:
 
 
 def parse_nodes(wordlist: list):
+    """
+    Takes a list of synsets/words and inserts them into the database in batches
+    :param wordlist: a list of synsets
+    """
     insert_helper = InsertHelper()
     n = 400
     print("PARSING NODES")
@@ -225,6 +233,10 @@ def parse_nodes(wordlist: list):
 
 
 def parse_relationships(wordlist: list):
+    """
+    Parses all of the relationships for the synsets/words provided
+    :param wordlist: a list of synsets
+    """
     insert_helper = InsertHelper()
     i = 0
     print("ADDING RELATIONSHIPS")

@@ -5,7 +5,9 @@ from io import StringIO
 import pandas as pd
 import argparse
 from best_model_params import param_grid
-
+"""
+Script to find a possible optimal model for a rela
+"""
 parser = argparse.ArgumentParser(description="Evaluate a given graph database")
 parser.add_argument('-relations', help="Specify the file location of the various relations "
                                        "between nodes", required=True,
